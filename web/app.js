@@ -363,7 +363,7 @@ document.addEventListener("click", (e) => {
 async function loadTemplates() {
   const names = await api.get("/api/templates");
   $("#template-select").innerHTML =
-    names.map(n => `<option value="${n}" ${n === "key-points" ? "selected" : ""}>${n.replace(/-/g, " ")}</option>`).join("");
+    names.map(n => `<option value="${n}" ${n === "meeting-minutes" ? "selected" : ""}>${n.replace(/-/g, " ")}</option>`).join("");
 }
 $("#btn-summarize").addEventListener("click", async () => {
   const btn = $("#btn-summarize"), out = $("#summary-content");
@@ -375,6 +375,10 @@ $("#btn-summarize").addEventListener("click", async () => {
     (d) => { acc += d; out.innerHTML = renderMarkdown(acc); });
   if (res.error) out.innerHTML = `<div class="msg error">${esc(res.error)}</div>` + out.innerHTML;
   btn.disabled = false;
+});
+
+$("#btn-pdf").addEventListener("click", () => {
+  window.open(`/api/recordings/${currentRecording}/summary.pdf?template=${$("#template-select").value}`, "_blank");
 });
 
 /* ask */

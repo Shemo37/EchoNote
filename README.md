@@ -17,6 +17,8 @@ Forked from the ASR/diarization stack of [HoloLiveTL](https://github.com/Shemo37
 - **Speaker labels** ("who said what") via [pyannote](https://github.com/pyannote/pyannote-audio) — optional.
 - **AI summaries** with templates (meeting minutes, action items, key points,
   interview) powered by a local LLM through [Ollama](https://ollama.com) — optional.
+- **PDF export**: download any generated summary (e.g. meeting minutes) as a clean
+  A4 PDF with embedded fonts — Japanese content included.
 - **Ask your recordings**: chat about a recording (or across recent ones); answers
   cite `[mm:ss]` timestamps you can click to jump the audio player.
 - **Dashboard**: recordings/hours stats, 14-day activity, aggregated checkable

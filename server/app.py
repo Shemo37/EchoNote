@@ -16,6 +16,7 @@ from .config import Config, ensure_dirs, AUDIO_DIR
 from .diarize import speaker_color
 from .llm import (create_llm, transcript_for_prompt, LLMUnavailable, INSTALL_HINT,
                   format_timestamp)
+from .pdf_export import build_summary_pdf
 from .pipeline import Pipeline, store_summary, ffmpeg_path
 
 logger = logging.getLogger(__name__)
@@ -158,6 +159,20 @@ def create_app(config: Config | None = None) -> FastAPI:
                 yield _sse({"error": str(e)})
 
         return StreamingResponse(stream(), media_type="text/event-stream")
+
+    @app.get("/api/recordings/{rec_id}/summary.pdf")
+    def summary_pdf(rec_id: int, template: str = None):
+        rec = db.get_recording(rec_id)
+        if not rec:
+            raise HTTPException(404, "recording not found")
+        summary = db.latest_summary(rec_id, template)
+        if not summary:
+            raise HTTPException(404, "no summary yet - generate one first")
+        pdf = build_summary_pdf(rec, summary["content"], summary["template"])
+        safe_title = SAFE_NAME.sub("_", rec["title"])[:60] or "summary"
+        from fastapi.responses import Response
+        return Response(pdf, media_type="application/pdf", headers={
+            "Content-Disposition": f'attachment; filename="{safe_title}_{summary["template"]}.pdf"'})
 
     # ---------- ask (per-recording and global) ----------
 

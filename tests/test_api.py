@@ -128,3 +128,34 @@ def test_delete_recording(client, make_wav):
     wait_ready(client, rec_id)
     assert client.delete(f"/api/recordings/{rec_id}").json()["ok"] is True
     assert client.get(f"/api/recordings/{rec_id}").status_code == 404
+
+
+def test_summary_pdf_export(client, make_wav):
+    wav = make_wav(seconds=6.0, name="pdf.wav")
+    with open(wav, "rb") as f:
+        rec_id = client.post("/api/recordings",
+                             files={"file": ("board_meeting.wav", f, "audio/wav")}).json()["id"]
+    wait_ready(client, rec_id)
+
+    # no summary yet -> 404 with guidance
+    assert client.get(f"/api/recordings/{rec_id}/summary.pdf").status_code == 404
+
+    client.post(f"/api/recordings/{rec_id}/summarize", params={"template": "meeting-minutes"})
+    r = client.get(f"/api/recordings/{rec_id}/summary.pdf",
+                   params={"template": "meeting-minutes"})
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "application/pdf"
+    assert r.content[:5] == b"%PDF-"
+    assert len(r.content) > 1500
+    assert "board_meeting_meeting-minutes.pdf" in r.headers["content-disposition"]
+
+
+def test_pdf_japanese_content():
+    from server.pdf_export import build_summary_pdf
+    rec = {"title": "週次ミーティング", "created_at": 1756100000.0,
+           "duration_s": 300, "language": "ja"}
+    md = ("## 概要\n田中さんが移行の完了を報告しました [00:12]\n\n"
+          "## Action Items\n- [ ] 金曜日までにレポートを送る\n")
+    pdf = build_summary_pdf(rec, md, "meeting-minutes")
+    assert pdf[:5] == b"%PDF-"
+    assert len(pdf) > 1500

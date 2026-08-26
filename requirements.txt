@@ -1,0 +1,12 @@
+fastapi>=0.110
+uvicorn>=0.29
+python-multipart>=0.0.9
+requests>=2.28.0
+faster-whisper>=1.1.0
+
+# Optional: speaker diarization ("who said what").
+# Needs a HuggingFace token + accepting the pyannote license at
+# https://huggingface.co/pyannote/speaker-diarization-3.1
+# pyannote.audio>=3.1.0
+
+# Also install ffmpeg (https://ffmpeg.org) to import mp3/m4a/webm recordings.
